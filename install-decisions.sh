@@ -6,6 +6,17 @@ set -euo pipefail
 CLAUDE_DIR="$HOME/.claude"
 mkdir -p "$CLAUDE_DIR/bin" "$CLAUDE_DIR/hooks" "$CLAUDE_DIR/decisions"
 
+# 既存プロジェクトディレクトリを projects/ 配下へ移行(冪等)
+PROJ_DIR="$CLAUDE_DIR/decisions/projects"
+mkdir -p "$PROJ_DIR"
+for d in "$CLAUDE_DIR/decisions"/*/; do
+    name=$(basename "$d")
+    [ "$name" = "projects" ] && continue
+    if ls "$d"*.jsonl 2>/dev/null | grep -q .; then
+        mv "$d" "$PROJ_DIR/$name"
+    fi
+done
+
 # ───────────────────────── bin/decisions ─────────────────────────
 cat > "$CLAUDE_DIR/bin/decisions" <<'PYEOF'
 #!/usr/bin/env python3
@@ -32,7 +43,7 @@ C = {"dim": "\033[2m", "b": "\033[1m", "cy": "\033[36m", "gr": "\033[32m",
 
 def load():
     recs = []
-    for fp in glob.glob(os.path.join(ROOT, "*", "*.jsonl")):
+    for fp in glob.glob(os.path.join(ROOT, "projects", "*", "*.jsonl")):
         with open(fp, encoding="utf-8", errors="replace") as fh:
             for ln in fh:
                 ln = ln.strip()
@@ -211,7 +222,7 @@ def main():
     }
 
     day = datetime.date.today().isoformat()
-    outdir = os.path.expanduser(f"~/.claude/decisions/{proj}")
+    outdir = os.path.expanduser(f"~/.claude/decisions/projects/{proj}")
     os.makedirs(outdir, exist_ok=True)
     with open(os.path.join(outdir, f"{day}.jsonl"), "a", encoding="utf-8") as fh:
         fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
@@ -310,7 +321,7 @@ def main():
         "items": items,
     }
     day = datetime.date.today().isoformat()
-    outdir = os.path.expanduser(f"~/.claude/decisions/{proj}")
+    outdir = os.path.expanduser(f"~/.claude/decisions/projects/{proj}")
     os.makedirs(outdir, exist_ok=True)
     with open(os.path.join(outdir, f"{day}.jsonl"), "a", encoding="utf-8") as fh:
         fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
