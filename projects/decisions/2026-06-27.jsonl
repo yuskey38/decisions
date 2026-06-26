@@ -1,1 +1,2 @@
 {"ts": "2026-06-27T07:57:01", "project": "decisions", "cwd": "/Users/yuskey/.claude/decisions", "type": "ExitPlanMode", "summary": "計画承認: ", "why_user": "projects 配下にプロジェクトを配置したい", "why_assistant": "変更箇所が明確になりました。プランを作成します。", "kind": "plan_approved", "plan": ""}
+{"ts": "2026-06-27T08:07:25", "project": "decisions", "cwd": "/Users/yuskey/.claude/decisions", "type": "llm_supplement", "items": [{"decision": "ログ保存先を projects/ サブディレクトリ配下に配置する", "reason": "プロジェクトごとにログを整理・管理するため"}]}
