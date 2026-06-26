@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 このリポジトリは **Claude Code の意思決定ログシステム** のインストーラとログデータを管理する。
 
 - `install-decisions.sh` を実行すると、別端末でも同じ環境を冪等に再現できる。
-- ログは `~/.claude/decisions/projects/<project>/<YYYY-MM-DD>.jsonl` に自動蓄積される。
+- ログは `~/.claude/decisions/.projects/<project>/<YYYY-MM-DD>.jsonl` に自動蓄積される。
 
 ## インストール
 
