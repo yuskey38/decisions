@@ -334,6 +334,30 @@ if __name__ == "__main__":
     sys.exit(0)
 PYEOF
 
+# ─────────────── hooks/auto_push_decisions.sh ───────────────────────
+cat > "$CLAUDE_DIR/hooks/auto_push_decisions.sh" <<'SHEOF'
+#!/usr/bin/env bash
+# SessionEnd hook: decisions ログを自動 commit & push する
+
+set -euo pipefail
+
+DECISIONS_DIR="$HOME/.claude/decisions"
+cd "$DECISIONS_DIR"
+
+# 変更がなければ終了
+if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+    exit 0
+fi
+
+DATE=$(date +%Y-%m-%d)
+git add projects/
+git diff --cached --quiet && exit 0  # add 後も差分なければ終了
+
+git commit -m "chore: auto-save decisions log ${DATE}"
+git push origin main
+SHEOF
+chmod +x "$CLAUDE_DIR/hooks/auto_push_decisions.sh"
+
 # ─────────────── settings.json に hooks を冪等マージ ───────────────
 SETTINGS="$CLAUDE_DIR/settings.json"
 [ -f "$SETTINGS" ] || echo '{}' > "$SETTINGS"
@@ -372,6 +396,20 @@ if not has(se, "decision_supplement.py"):
                               'python3 "$HOME/.claude/hooks/decision_supplement.py" '
                               '>/dev/null 2>&1 &'}],
     })
+
+# SessionEnd -> auto_push_decisions.sh (バックグラウンド)
+if not has(se, "auto_push_decisions.sh"):
+    # 既存グループに追加、なければ新規グループ
+    if se:
+        se[0]["hooks"].append({
+            "type": "command",
+            "command": 'bash "$HOME/.claude/hooks/auto_push_decisions.sh" >/dev/null 2>&1 &',
+        })
+    else:
+        se.append({
+            "hooks": [{"type": "command",
+                       "command": 'bash "$HOME/.claude/hooks/auto_push_decisions.sh" >/dev/null 2>&1 &'}],
+        })
 
 json.dump(d, open(fp, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 print("settings.json updated:", fp)
